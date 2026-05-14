@@ -1,5 +1,8 @@
+using Plots
+
+
 struct Model{D<:DataHolder}
-  dh::D
+  data::D
   modes::Vector{Vector}
   residue::Vector
 end
@@ -8,9 +11,12 @@ end
 function Model(f::Vector; algorithm = :EMD)
   modes = Vector{Vector{eltype(f)}}()
   residue = copy(f)
-  if algorithm === :EMD
-    dh = DataHolderEMD(f)
-    return Model{DataHolderEMD}(dh, modes, residue)
+  if ( algorithm === :EMD ) || ( algorithm === :EMD3 )
+    data = DataHolderEMD(f; N = 3)
+    return Model{DataHolderEMD{3}}(data, modes, residue)
+  elseif ( algorithm === :EMD1 )
+    data = DataHolderEMD(f; N = 1)
+    return Model{DataHolderEMD{1}}(data, modes, residue)
   end
   throw("Algorithm not recognized.")
 end
@@ -21,10 +27,10 @@ Base.length(model::Model) = length(model.residue)
 
 function sifting!(model::Model)
   for _ in 1:10
-    sifting_step!(model)
-    push!(model.modes, copy(model.dh.f))
-    model.residue .-= model.dh.f
-    model.dh.f .= model.residue
+    sifting_step!(model.data)
+    push!(model.modes, copy(model.data.f))
+    model.residue .-= model.data.f
+    model.data.f .= model.residue
   end
 end
 
