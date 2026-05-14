@@ -9,6 +9,20 @@ end
 Base.length(data::DataHolder) = length(data.f)
 
 
+function update_extrema!(data::DataHolder)
+  prev, curr = data.f[1], data.f[2]
+  for j in 2:(length(data)-1)
+    nxt = data.f[j+1]
+    data.minima[j] = ( prev > curr ) && ( curr < nxt )
+    data.maxima[j] = ( prev < curr ) && ( curr > nxt )
+    prev = curr
+    curr = nxt
+  end
+  data.minima[1] = data.minima[end] = data.maxima[1] = data.maxima[end] = true
+  return nothing
+end
+
+
 ## DataHolder for Empirical Mode Decomposition
 
 
@@ -36,12 +50,20 @@ end
 
 mutable struct DataHolderIF <: DataHolder
   f::Vector
+  minima::BitVector       
+  maxima::BitVector
+  mean::Vector
+  alpha::Float64
   iter::Int
   stop::Bool
+  m::Int
 end
 
 
 function DataHolderIF(f::Vector)
-  return DataHolderIF(f, 0, false)
+  minima = similar(BitVector, length(f))
+  maxima = similar(BitVector, length(f))
+  mean = similar(f)
+  return DataHolderIF(f, minima, maxima, mean, 2, 0, false, 0)
 end
 

@@ -2,7 +2,7 @@ module EMD_IF
 
 
 export Model
-export update_extrema!, substract_mean!, sifting_step!, sifting!, plot_modes
+export sifting!, plot_modes
 
 
 include("dataholders.jl")

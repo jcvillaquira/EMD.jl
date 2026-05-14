@@ -10,21 +10,6 @@ function sifting_step!(data::DataHolderEMD)
 end
 
 
-function update_extrema!(data::DataHolderEMD)
-  prev, curr = data.f[1], data.f[2]
-  for j in 2:(length(data)-1)
-    nxt = data.f[j+1]
-    data.minima[j] = ( prev > curr ) && ( curr < nxt )
-    data.maxima[j] = ( prev < curr ) && ( curr > nxt )
-    prev = curr
-    curr = nxt
-  end
-  data.minima[1] = data.minima[end] = data.maxima[1] = data.maxima[end] = true
-  return nothing
-end
-
-
-
 function get_mean(data::DataHolderEMD{3})
   rg = 1:length(data)
   idx_min = findall(data.minima)

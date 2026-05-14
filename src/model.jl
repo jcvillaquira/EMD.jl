@@ -17,6 +17,9 @@ function Model(f::Vector; algorithm = :EMD)
   elseif ( algorithm === :EMD1 )
     data = DataHolderEMD(f; N = 1)
     return Model{DataHolderEMD{1}}(data, modes, residue)
+  elseif ( algorithm === :IF )
+    data = DataHolderIF(f)
+    return Model{DataHolderIF}(data, modes, residue)
   end
   throw("Algorithm not recognized.")
 end

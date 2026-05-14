@@ -1,28 +1,20 @@
 using Plots
 using Revise
-using Dierckx
+using Debugger
 
-includet("src/data.jl")
-using .EMD
+includet("src/EMD_IF.jl")
+Revise.track(EMD_IF, "src/dataholders.jl")
+Revise.track(EMD_IF, "src/model.jl")
+Revise.track(EMD_IF, "src/emd.jl")
+Revise.track(EMD_IF, "src/if.jl")
+using .EMD_IF
 
-N = 100
-dh = DataHolder(rand(N))
+N = 200
+jmp = 2
+f = jmp * Float64.(1:N .> N/4) .+ 2jmp * Float64.(1:N .> 2N/4) .+ 3jmp * Float64.(1:N .> 3N/4) .+ 4jmp * Float64.(1:N .> 4N/4) + rand(N)
+plot(f)
 
-update_extrema!(dh)
+model = Model(copy(f); algorithm = :IF)
+sifting!(model)
+plot_modes(model)
 
-@time idx_min = findall(dh.minima)
-idx_max = findall(dh.maxima)
-
-# Compute splines 
-rg = 1:length(f)
-spl_min = Spline1D(idx_min, f[idx_min])
-spl_max = Spline1D(idx_max, f[idx_max])
-
-# Construct bezier interpolation
-pl = plot(dh.f)
-# plot!(pl, rg, spl_min(rg))
-# plot!(pl, rg, spl_max(rg))
-scatter!(pl, idx_min, dh.f[idx_min])
-scatter!(pl, idx_max, dh.f[idx_max])
-mn = 0.5 .* ( spl_min(rg) .+ spl_max(rg) )
-plot!(pl, rg, mn)
