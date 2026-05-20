@@ -1,20 +1,28 @@
 using Plots
 using Revise
 using Debugger
+using CSV
 
 includet("src/EMD_IF.jl")
 Revise.track(EMD_IF, "src/dataholders.jl")
 Revise.track(EMD_IF, "src/model.jl")
 Revise.track(EMD_IF, "src/emd.jl")
 Revise.track(EMD_IF, "src/if.jl")
+Revise.track(EMD_IF, "src/jmodel.jl")
 using .EMD_IF
 
-N = 200
-jmp = 2
-f = jmp * Float64.(1:N .> N/4) .+ 2jmp * Float64.(1:N .> 2N/4) .+ 3jmp * Float64.(1:N .> 3N/4) .+ 4jmp * Float64.(1:N .> 4N/4) + rand(N)
-plot(f)
+## STEP 0: Load data
+f = CSV.File(open("data/example.csv"), header=false).Column1
+N = length(f)
 
-model = Model(copy(f); algorithm = :IF)
+## Create Model
+model = Model(copy(f), algorithm = :IF)
 sifting!(model)
 plot_modes(model)
+
+## Create JModel
+model = Model(copy(f), algorithm = :IF)
+jmodel = JModel(model)
+run!(jmodel)
+plot_modes(jmodel)
 

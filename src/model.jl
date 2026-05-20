@@ -1,4 +1,5 @@
 using Plots
+using ProgressBars
 
 
 struct Model{D<:DataHolder}
@@ -28,8 +29,8 @@ end
 Base.length(model::Model) = length(model.residue)
 
 
-function sifting!(model::Model)
-  for _ in 1:10
+function sifting!(model::Model; max_iter = 10)
+  for _ in ProgressBar(1:max_iter)
     sifting_step!(model.data)
     push!(model.modes, copy(model.data.f))
     model.residue .-= model.data.f
@@ -38,7 +39,7 @@ function sifting!(model::Model)
 end
 
 
-function plot_modes(model::Model)
+function plot_modes(model::Model; with_jump = false)
   n_modes = sum(any(m .!= 0) for m in model.modes)
   original = zeros(length(model))
   default(
@@ -49,14 +50,16 @@ function plot_modes(model::Model)
       left_margin = 2Plots.mm,
       bottom_margin = 1Plots.mm
   )
-  pl = plot(layout = (n_modes + 2, 1));
+  additional = with_jump ? 4 : 2
+  pl = plot(layout = (n_modes + additional, 1));
   for n in 1:n_modes
     original .+= model.modes[n]
-    plot!(pl, model.modes[n], subplot = n + 1)
+    plot!(pl, model.modes[n], subplot = n + additional - 1)
   end
   original .+= model.residue
-  plot!(pl, model.residue, subplot = n_modes + 2)
-  plot!(pl, original, subplot = 1, linecolor = "red")
+  plot!(pl, model.residue, subplot = n_modes + additional)
+  pos_original = with_jump ? 3 : 1
+  plot!(pl, original, subplot = pos_original, linecolor = "red")
   return pl
 end
 
